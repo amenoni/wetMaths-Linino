@@ -15,13 +15,15 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from game.api import GameResource
+from game.api import GameResource,CurrentGameResource
 
 gameResource = GameResource()
+currentGameResource = CurrentGameResource()
 
 
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api/',include(gameResource.urls)),
+    url(r'^api/',include(currentGameResource.urls)),
 ]
