@@ -15,10 +15,11 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
-from game.api import GameResource,CurrentGameResource
+from game.api import GameResource,CurrentGameResource,MoveResource
 
 gameResource = GameResource()
 currentGameResource = CurrentGameResource()
+moveResource = MoveResource()
 
 
 
@@ -26,4 +27,5 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api/',include(gameResource.urls)),
     url(r'^api/',include(currentGameResource.urls)),
+    url(r'^api/',include(moveResource.urls)),
 ]
