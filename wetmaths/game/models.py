@@ -81,4 +81,9 @@ def process_game(sender, instance, **kwargs):
             instance.scoreP2 = lastMove.scoreP2
             instance.scoreP3 = lastMove.scoreP3 - instance.value
 
-    #TODO Try to post this move values from the phone, then you must start managing game events like when a player loses or wins 
+    #TODO Try to post this move values from the phone, then you must start managing game events like when a player loses or wins
+
+@receiver(post_save, sender=Move)
+def send_move(sender, instance, **kwargs):
+    json = serializers.serialize('json',[instance,])
+    fire.sendGameMessage(instance.game.pk,"moves",json)
