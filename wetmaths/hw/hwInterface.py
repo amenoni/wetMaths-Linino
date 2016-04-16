@@ -28,3 +28,9 @@ def shootAll():
         sendMailbox("shootAll")
     else:
         print "Shoot All"
+
+def showReady():
+    if active:
+        sendMailbox("ready")
+    else:
+        print "Im Ready"
