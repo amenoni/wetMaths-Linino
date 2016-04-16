@@ -5,8 +5,8 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.core import serializers
 from django.utils import timezone
-import datetime
-from hw.hwInterface import sweepMode
+
+from hw.hwInterface import sweepMode, shootPlayer, waitingMode
 import fire
 
 
@@ -30,8 +30,14 @@ class Game(models.Model):
 @receiver(post_save, sender=Game)
 def launch_game(sender, instance, **kwargs):
     json = serializers.serialize('json',[instance,])
+
+    if instance.status == 's':
+        sweepMode()
+    elif instance.status == 'f' or instance.status == 'c':
+        waitingMode()
+
     fire.sendGameMessage(instance.pk,"game_update",json)
-    #sweepMode()
+
 
 class Move(models.Model):
     PLAYER_CHOICES = ((1, 'First Player'),(2, 'Second Player'),(3, 'Third Player'),)
@@ -49,7 +55,7 @@ class Move(models.Model):
 
 
 @receiver(pre_save, sender=Move)
-def process_game(sender, instance, **kwargs):
+def process_move(sender, instance, **kwargs):
     lastMoves = Move.objects.filter(game__pk=instance.game.pk)
 
     if not lastMoves:
@@ -67,21 +73,43 @@ def process_game(sender, instance, **kwargs):
 
     else:
         lastMove = lastMoves.latest('pk')
-        print lastMove
         if(instance.player == 1):
             instance.scoreP1 = lastMove.scoreP1 - instance.value
             instance.scoreP2 = lastMove.scoreP2
             instance.scoreP3 = lastMove.scoreP3
+
+            if instance.scoreP1 <= 0:
+                shootPlayer(1)
+
         elif(instance.player == 2):
             instance.scoreP1 = lastMove.scoreP1
             instance.scoreP2 = lastMove.scoreP2 - instance.value
             instance.scoreP3 = lastMove.scoreP3
+
+            if instance.scoreP2 <= 0:
+                shootPlayer(2)
+
         else:
             instance.scoreP1 = lastMove.scoreP1
             instance.scoreP2 = lastMove.scoreP2
             instance.scoreP3 = lastMove.scoreP3 - instance.value
 
-    #TODO Try to post this move values from the phone, then you must start managing game events like when a player loses or wins
+            if instance.scoreP3 <= 0:
+                shootPlayer(3)
+
+    if instance.scoreP1 <= 0 and instance.scoreP2 <= 0:
+        instance.game.winner = 3
+        instance.game.status = 'f'
+        instance.game.save()
+    elif instance.scoreP2 <= 0 and instance.scoreP3 <= 0:
+        instance.game.winner = 1
+        instance.game.status = 'f'
+        instance.game.save()
+    elif instance.scoreP1 <= 0 and instance.scoreP3 <= 0:
+        instance.game.winner = 2
+        instance.game.status = 'f'
+        instance.game.save()
+
 
 @receiver(post_save, sender=Move)
 def send_move(sender, instance, **kwargs):

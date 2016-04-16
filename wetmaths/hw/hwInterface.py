@@ -1,14 +1,30 @@
 #!/usr/bin/python
 from sendMailbox import sendMailbox
 
+#Change to false to avoid hardware actions, insted send console messages
+active = False
+
+
 def sweepMode():
-    sendMailbox("sweep")
+    if active:
+        sendMailbox("sweep")
+    else:
+        print "Sweep MODE"
 
 def waitingMode():
-    sendMailbox("wait")
+    if active:
+        sendMailbox("wait")
+    else:
+        print "Wait Mode"
 
 def shootPlayer(playerNr):
-    sendMailbox("shoot %s" % playerNr)
+    if active:
+        sendMailbox("shoot %s" % playerNr)
+    else:
+        print "Shoot player %d" % playerNr
 
 def shootAll():
-    sendMailbox("shootAll")
+    if active:
+        sendMailbox("shootAll")
+    else:
+        print "Shoot All"
