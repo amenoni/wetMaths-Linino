@@ -114,4 +114,5 @@ def process_move(sender, instance, **kwargs):
 @receiver(post_save, sender=Move)
 def send_move(sender, instance, **kwargs):
     json = serializers.serialize('json',[instance,])
-    fire.sendGameMessage(instance.game.pk,"moves",json)
+    if instance.pk % 5 == 0:
+        fire.sendGameMessage(instance.game.pk,"moves",json)
