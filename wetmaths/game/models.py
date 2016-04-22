@@ -22,6 +22,10 @@ class Game(models.Model):
     player3 = models.TextField(null=True,blank=True)
     winner = models.IntegerField(null=True,blank=True,choices=WINNER_CHOICES )
     status = models.TextField(choices=STATUS_CHOICES)
+    player1_active = models.BooleanField(default=True)
+    player2_active = models.BooleanField(default=True)
+    player3_active = models.BooleanField(default=True)
+
 
     def __str__(self):
         return str(self.pk)
@@ -56,59 +60,67 @@ class Move(models.Model):
 
 @receiver(pre_save, sender=Move)
 def process_move(sender, instance, **kwargs):
+    game = instance.game
     lastMoves = Move.objects.filter(game__pk=instance.game.pk)
 
-    if not lastMoves:
-        #THIS IS THE FIRST MOVE OF THE GAME
-        instance.scoreP1 = 100
-        instance.scoreP2 = 100
-        instance.scoreP3 = 100
+    if not game.status == 'f':
+        if not lastMoves:
+            #THIS IS THE FIRST MOVE OF THE GAME
+            instance.scoreP1 = 100
+            instance.scoreP2 = 100
+            instance.scoreP3 = 100
 
-        if(instance.player == 1):
-            instance.scoreP1 -= instance.value
-        elif(instance.player == 2):
-            instance.scoreP2 -= instance.value
-        else:
-            instance.scoreP3 -= instance.value
-
-    else:
-        lastMove = lastMoves.latest('pk')
-        if(instance.player == 1):
-            instance.scoreP1 = lastMove.scoreP1 - instance.value
-            instance.scoreP2 = lastMove.scoreP2
-            instance.scoreP3 = lastMove.scoreP3
-
-            if instance.scoreP1 <= 0:
-                shootPlayer(1)
-
-        elif(instance.player == 2):
-            instance.scoreP1 = lastMove.scoreP1
-            instance.scoreP2 = lastMove.scoreP2 - instance.value
-            instance.scoreP3 = lastMove.scoreP3
-
-            if instance.scoreP2 <= 0:
-                shootPlayer(2)
+            if(instance.player == 1):
+                instance.scoreP1 -= instance.value
+            elif(instance.player == 2):
+                instance.scoreP2 -= instance.value
+            else:
+                instance.scoreP3 -= instance.value
 
         else:
-            instance.scoreP1 = lastMove.scoreP1
-            instance.scoreP2 = lastMove.scoreP2
-            instance.scoreP3 = lastMove.scoreP3 - instance.value
+            lastMove = lastMoves.latest('pk')
+            if(instance.player == 1 and game.player1_active):
+                instance.scoreP1 = lastMove.scoreP1 - instance.value
+                instance.scoreP2 = lastMove.scoreP2
+                instance.scoreP3 = lastMove.scoreP3
 
-            if instance.scoreP3 <= 0:
-                shootPlayer(3)
+                if instance.scoreP1 <= 0:
+                    shootPlayer(1)
+                    game.player1_active = False
+                    game.save()
 
-    if instance.scoreP1 <= 0 and instance.scoreP2 <= 0:
-        instance.game.winner = 3
-        instance.game.status = 'f'
-        instance.game.save()
-    elif instance.scoreP2 <= 0 and instance.scoreP3 <= 0:
-        instance.game.winner = 1
-        instance.game.status = 'f'
-        instance.game.save()
-    elif instance.scoreP1 <= 0 and instance.scoreP3 <= 0:
-        instance.game.winner = 2
-        instance.game.status = 'f'
-        instance.game.save()
+            elif(instance.player == 2 and game.player2_active):
+                instance.scoreP1 = lastMove.scoreP1
+                instance.scoreP2 = lastMove.scoreP2 - instance.value
+                instance.scoreP3 = lastMove.scoreP3
+
+                if instance.scoreP2 <= 0:
+                    shootPlayer(2)
+                    game.player2_active = False
+                    game.save()
+
+            else:
+                instance.scoreP1 = lastMove.scoreP1
+                instance.scoreP2 = lastMove.scoreP2
+                instance.scoreP3 = lastMove.scoreP3 - instance.value
+
+                if instance.scoreP3 <= 0 and game.player3_active:
+                    shootPlayer(3)
+                    game.player3_active = False
+                    game.save()
+
+        if instance.scoreP1 <= 0 and instance.scoreP2 <= 0:
+            instance.game.winner = 3
+            instance.game.status = 'f'
+            instance.game.save()
+        elif instance.scoreP2 <= 0 and instance.scoreP3 <= 0:
+            instance.game.winner = 1
+            instance.game.status = 'f'
+            instance.game.save()
+        elif instance.scoreP1 <= 0 and instance.scoreP3 <= 0:
+            instance.game.winner = 2
+            instance.game.status = 'f'
+            instance.game.save()
 
 
 @receiver(post_save, sender=Move)
