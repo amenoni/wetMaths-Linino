@@ -62,7 +62,7 @@ Crear o modificar el archivo */etc/rc.local* para lanzar automaticamente el serv
 ./mnt/sda1/arduino/gunicorn_srv wetmaths.wsgi --bind 0.0.0.0:8000
 ```
 
-###Abrir la aplicación Android y conectarla a la dirección del Yun en el puerto 8000###
+***Abrir la aplicación Android y conectarla a la dirección del Yun en el puerto 8000***
 
 
 
