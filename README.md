@@ -1,5 +1,7 @@
 # wetMaths-Linino
 
+Spanish [readme](https://github.com/amenoni/wetMaths-Linino/blob/master/README_ES.md)
+
 ###WetMaths is an educational app to learn the multiplication tables. ###
 
 3 Players using an Android App and a Arduino Based device that will launch a little party foam spray to the player that loses
