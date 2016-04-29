@@ -6,7 +6,8 @@ Spanish [readme](https://github.com/amenoni/wetMaths-Linino/blob/master/README_E
 
 3 Players using an Android App and a Arduino Based device that will launch a little party foam spray to the player that loses
 
-# ADD LINK TO YOUTUBE
+##Demo Video
+[![WetMaths Demo](https://img.youtube.com/vi/A47k1j1MHRI/0.jpg)](https://www.youtube.com/watch?v=A47k1j1MHRI)
 
 In this repo you will find the code for the Django app that runs in the Linux side of the Arduino Yun.
 
